@@ -465,7 +465,7 @@ export default function App() {
                   required
                   value={usernameInput}
                   onChange={(e) => setUsernameInput(e.target.value)}
-                  placeholder="أدخل اسم المستخدم (abed)"
+                  placeholder="أدخل اسم المستخدم"
                   className="w-full pr-10 pl-4 py-2.5 rounded-2xl border border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-950 text-xs focus:ring-2 focus:ring-[#E91E63]/20 focus:border-[#E91E63] transition font-sans outline-none text-slate-800 dark:text-slate-100 text-right"
                   id="login-username"
                 />
@@ -485,7 +485,7 @@ export default function App() {
                   required
                   value={passwordInput}
                   onChange={(e) => setPasswordInput(e.target.value)}
-                  placeholder="أدخل كلمة المرور (24682468)"
+                  placeholder="أدخل كلمة المرور"
                   className="w-full pr-10 pl-10 py-2.5 rounded-2xl border border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-950 text-xs focus:ring-2 focus:ring-[#E91E63]/20 focus:border-[#E91E63] transition font-sans outline-none text-slate-800 dark:text-slate-100 text-right"
                   id="login-password"
                 />
@@ -512,22 +512,10 @@ export default function App() {
             </button>
           </form>
 
-          {/* SuperAdmin Credentials Help Box */}
-          <div className="mt-8 pt-6 border-t border-dashed border-gray-100 dark:border-slate-800 space-y-3">
-            <div className="bg-[#E91E63]/5 dark:bg-[#E91E63]/10 p-4 rounded-2xl border border-pink-100/50 dark:border-pink-900/10 text-right">
-              <h3 className="text-xs font-black text-[#E91E63] flex items-center gap-1.5 mb-1.5">
-                <span>🔑 بيانات الدخول الافتراضية للتدقيق والمراجعة:</span>
-              </h3>
-              <p className="text-[11px] text-gray-750 dark:text-gray-350 font-bold leading-relaxed">
-                اسم المستخدم: <code className="bg-white dark:bg-slate-900 px-1.5 py-0.5 rounded border border-pink-100 text-[#E91E63] text-xs font-mono">abed</code>
-              </p>
-              <p className="text-[11px] text-gray-750 dark:text-gray-350 font-bold leading-relaxed mt-1">
-                كلمة السر: <code className="bg-white dark:bg-slate-900 px-1.5 py-0.5 rounded border border-pink-100 text-[#E91E63] text-xs font-mono">24682468</code>
-              </p>
-            </div>
-            
-            <p className="text-[10px] text-center text-gray-400 leading-relaxed font-semibold">
-              يقوم نظام ERP مدرسة حبيبة بحفظ جلسة المصادقة بمتصفح الويب للمشرف بصورة كاملة.
+          {/* Verification info note */}
+          <div className="mt-8 pt-6 border-t border-dashed border-gray-100 dark:border-slate-800 text-center">
+            <p className="text-[10px] text-gray-400 leading-relaxed font-semibold">
+              يقوم نظام ERP مدرسة حبيبة بحفظ جلسة المصادقة بمتصفح الويب للمشرف بصورة كاملة لمزيد من الحماية.
             </p>
           </div>
 
