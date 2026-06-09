@@ -34,6 +34,7 @@ interface StudentsModuleProps {
   onAddStudent: (student: Omit<Student, 'id' | 'qrCode'>) => void;
   onDeleteStudent: (id: string) => void;
   onUpdateScore: (id: string, newScore: number) => void;
+  onUpdateStudent?: (student: Student) => void;
   onImportStudents?: (students: Omit<Student, 'id' | 'qrCode'>[]) => void;
 }
 
@@ -42,12 +43,57 @@ export const StudentsModule: React.FC<StudentsModuleProps> = ({
   onAddStudent,
   onDeleteStudent,
   onUpdateScore,
+  onUpdateStudent,
   onImportStudents
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedClass, setSelectedClass] = useState('الكل');
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+
+  // Edit Student Form State
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editClassId, setEditClassId] = useState('');
+  const [editParentName, setEditParentName] = useState('');
+  const [editParentPhone, setEditParentPhone] = useState('');
+  const [editEmail, setEditEmail] = useState('');
+  const [editNationalId, setEditNationalId] = useState('');
+  const [editBloodType, setEditBloodType] = useState('');
+  const [editGrades, setEditGrades] = useState<{ [subject: string]: number }>({});
+  const [editGender, setEditGender] = useState<'ذكر' | 'أنثى'>('ذكر');
+
+  const startEditingStudent = (stu: Student) => {
+    setEditName(stu.name);
+    setEditClassId(stu.classId);
+    setEditParentName(stu.parentName);
+    setEditParentPhone(stu.parentPhone);
+    setEditEmail(stu.email);
+    setEditNationalId(stu.nationalId);
+    setEditBloodType(stu.bloodType);
+    setEditGrades({ ...stu.grades });
+    setEditGender(stu.gender || 'ذكر');
+    setIsEditing(true);
+  };
+
+  const saveStudentEdits = () => {
+    if (!selectedStudent || !editName) return;
+    const updated: Student = {
+      ...selectedStudent,
+      name: editName,
+      classId: editClassId,
+      parentName: editParentName,
+      parentPhone: editParentPhone,
+      email: editEmail,
+      nationalId: editNationalId,
+      bloodType: editBloodType,
+      grades: editGrades,
+      gender: editGender
+    };
+    onUpdateStudent?.(updated);
+    setSelectedStudent(updated);
+    setIsEditing(false);
+  };
 
   // Excel integration states
   const [showExcelSection, setShowExcelSection] = useState(false);
@@ -117,6 +163,7 @@ export const StudentsModule: React.FC<StudentsModuleProps> = ({
   const [newFeesTotal, setNewFeesTotal] = useState(15000);
   const [newFeesPaid, setNewFeesPaid] = useState(5000);
   const [newNotes, setNewNotes] = useState('');
+  const [newGender, setNewGender] = useState<'ذكر' | 'أنثى'>('ذكر');
 
   // Search and filter logic
   const filteredStudents = students.filter(student => {
@@ -135,7 +182,9 @@ export const StudentsModule: React.FC<StudentsModuleProps> = ({
     
     onAddStudent({
       name: newName,
-      avatar: "https://images.unsplash.com/photo-1544717305-2782549b5136?w=150",
+      avatar: newGender === 'ذكر'
+        ? "https://images.unsplash.com/photo-1544717305-2782549b5136?w=150"
+        : "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150",
       classId: newClassId,
       parentName: newParentName,
       parentPhone: newParentPhone,
@@ -150,7 +199,8 @@ export const StudentsModule: React.FC<StudentsModuleProps> = ({
       nationalId: newNationalId,
       bloodType: newBloodType,
       birthDate: newBirthDate,
-      notes: newNotes
+      notes: newNotes,
+      gender: newGender
     });
 
     // Reset fields
@@ -159,6 +209,7 @@ export const StudentsModule: React.FC<StudentsModuleProps> = ({
     setNewParentPhone('');
     setNewEmail('');
     setNewNotes('');
+    setNewGender('ذكر');
     setShowAddModal(false);
   };
 
@@ -335,7 +386,16 @@ export const StudentsModule: React.FC<StudentsModuleProps> = ({
                 className="w-14 h-14 rounded-full object-cover border-2 border-pink-200"
               />
               <div className="space-y-1">
-                <p className="text-xs font-mono font-bold text-[#E91E63]">{stu.id}</p>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <p className="text-xs font-mono font-bold text-[#E91E63]">{stu.id}</p>
+                  {stu.gender && (
+                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                      stu.gender === 'ذكر' ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/20' : 'bg-pink-50 text-pink-500 dark:bg-pink-950/20'
+                    }`}>
+                      {stu.gender}
+                    </span>
+                  )}
+                </div>
                 <h3 className="text-md font-bold text-gray-800 dark:text-white group-hover:text-[#E91E63] transition">
                   {stu.name}
                 </h3>
@@ -490,15 +550,28 @@ export const StudentsModule: React.FC<StudentsModuleProps> = ({
                   </div>
                 </div>
 
-                <div className="space-y-1">
-                  <label className="font-bold text-gray-700 dark:text-gray-300 block">تاريخ الميلاد *</label>
-                  <input
-                    type="date"
-                    required
-                    value={newBirthDate}
-                    onChange={(e) => setNewBirthDate(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-transparent"
-                  />
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <label className="font-bold text-gray-700 dark:text-gray-300 block">تاريخ الميلاد *</label>
+                    <input
+                      type="date"
+                      required
+                      value={newBirthDate}
+                      onChange={(e) => setNewBirthDate(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-transparent"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="font-bold text-gray-700 dark:text-gray-300 block">جنس الطالب (النوع) *</label>
+                    <select
+                      value={newGender}
+                      onChange={(e) => setNewGender(e.target.value as 'ذكر' | 'أنثى')}
+                      className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-transparent bg-white dark:bg-school-card-dark text-gray-800 dark:text-white"
+                    >
+                      <option value="ذكر" className="text-gray-850">ذكر (Male)</option>
+                      <option value="أنثى" className="text-gray-850">أنثى (Female)</option>
+                    </select>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
@@ -565,7 +638,10 @@ export const StudentsModule: React.FC<StudentsModuleProps> = ({
         <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-school-card-dark rounded-3xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto space-y-6 soft-shadow relative text-right">
             <button
-              onClick={() => setSelectedStudent(null)}
+              onClick={() => {
+                setSelectedStudent(null);
+                setIsEditing(false);
+              }}
               className="absolute left-4 top-4 bg-gray-100 dark:bg-gray-850 p-1.5 rounded-full text-gray-400 hover:text-gray-600"
             >
               x
@@ -573,7 +649,9 @@ export const StudentsModule: React.FC<StudentsModuleProps> = ({
             
             <div className="border-b pb-4 border-gray-100 dark:border-gray-800 flex justify-between items-center">
               <div>
-                <h2 className="text-xl font-black text-gray-800 dark:text-white">ملف التحصيل الدراسي والهوية الرقمية</h2>
+                <h2 className="text-xl font-black text-gray-800 dark:text-white">
+                  {isEditing ? "تعديل تفاصيل ملف الطالب كاملة" : "ملف التحصيل الدراسي والهوية الرقمية"}
+                </h2>
                 <p className="text-xs text-gray-400 font-mono">طالب: {selectedStudent.name} ({selectedStudent.id})</p>
               </div>
               <span className="text-xs font-semibold px-2 py-1 bg-pink-100 text-[#E91E63] rounded-full inline-flex items-center gap-1">
@@ -582,106 +660,271 @@ export const StudentsModule: React.FC<StudentsModuleProps> = ({
               </span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* ID electronic Student Badge card in premium layout */}
-              <div className="border border-pink-100 dark:border-pink-900 bg-gradient-to-br from-white via-pink-50/20 to-pink-100/10 dark:from-school-card-dark dark:to-pink-950/10 p-5 rounded-2xl relative overflow-hidden soft-shadow text-center space-y-4">
-                <div className="absolute right-0 top-0 w-24 h-24 bg-[#E91E63]/5 rounded-bl-[100px]" />
-                <div className="flex justify-between items-center text-xs text-[#E91E63] font-bold mb-2">
-                  <span>مدرسة حبيبة التعليمية الدولية</span>
-                  <span className="text-[10px] bg-[#E91E63]/10 px-1 py-0.5 rounded">بطاقة طالب ذكية</span>
-                </div>
+            {isEditing ? (
+              <div className="space-y-4 text-xs text-right">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Name field */}
+                  <div className="space-y-1">
+                    <label className="font-bold text-gray-700 dark:text-gray-300">اسم الطالب الثنائي/الرباعي *</label>
+                    <input
+                      type="text"
+                      className="w-full p-2 border rounded-xl bg-transparent font-bold text-gray-800 dark:text-white"
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                    />
+                  </div>
 
-                <div className="space-y-2">
-                  <img
-                    src={selectedStudent.avatar}
-                    alt={selectedStudent.name}
-                    className="w-20 h-20 rounded-full mx-auto object-cover border-4 border-[#E91E63] shadow"
-                  />
-                  <div>
-                    <h4 className="text-md font-bold text-gray-800 dark:text-white">{selectedStudent.name}</h4>
-                    <p className="text-xs text-gray-500">الفصل الدراسي: {selectedStudent.classId}</p>
+                  {/* Class selection */}
+                  <div className="space-y-1">
+                    <label className="font-bold text-gray-700 dark:text-gray-300">الفصل والقسم الدراسي</label>
+                    <select
+                      className="w-full p-2 border rounded-xl bg-white dark:bg-slate-900 font-bold"
+                      value={editClassId}
+                      onChange={(e) => setEditClassId(e.target.value)}
+                    >
+                      <option value="9-A">الصف التاسع (9-A)</option>
+                      <option value="8-A">الصف الثامن (8-A)</option>
+                      <option value="7-A">الصف السابع (7-A)</option>
+                      <option value="6-A">الصف السادس (6-A)</option>
+                      <option value="5-A">الصف الخامس (5-A)</option>
+                    </select>
+                  </div>
+
+                  {/* Parent name */}
+                  <div className="space-y-1">
+                    <label className="font-bold text-gray-700 dark:text-gray-300">اسم ولي الأمر والقرابة</label>
+                    <input
+                      type="text"
+                      className="w-full p-2 border rounded-xl bg-transparent"
+                      value={editParentName}
+                      onChange={(e) => setEditParentName(e.target.value)}
+                    />
+                  </div>
+
+                  {/* Parent phone */}
+                  <div className="space-y-1">
+                    <label className="font-bold text-gray-700 dark:text-gray-300">جوال ولي الأمر للتنبيهات والشكاوى</label>
+                    <input
+                      type="text"
+                      className="w-full p-2 border rounded-xl bg-transparent text-left font-mono"
+                      value={editParentPhone}
+                      onChange={(e) => setEditParentPhone(e.target.value)}
+                    />
+                  </div>
+
+                  {/* Email address */}
+                  <div className="space-y-1">
+                    <label className="font-bold text-gray-700 dark:text-gray-300">بريد التواصل والمراسلات</label>
+                    <input
+                      type="email"
+                      className="w-full p-2 border rounded-xl bg-transparent text-left font-mono"
+                      value={editEmail}
+                      onChange={(e) => setEditEmail(e.target.value)}
+                    />
+                  </div>
+
+                  {/* National ID */}
+                  <div className="space-y-1">
+                    <label className="font-bold text-gray-700 dark:text-gray-300">رقم الهوية الوطنية / الإقامة</label>
+                    <input
+                      type="text"
+                      className="w-full p-2 border rounded-xl bg-transparent text-left font-mono"
+                      value={editNationalId}
+                      onChange={(e) => setEditNationalId(e.target.value)}
+                    />
+                  </div>
+
+                  {/* Blood Type */}
+                  <div className="space-y-1">
+                    <label className="font-bold text-gray-700 dark:text-gray-300">فصيلة دم الطالب (لكشوفات الطوارئ)</label>
+                    <input
+                      type="text"
+                      className="w-full p-2 border rounded-xl bg-transparent"
+                      value={editBloodType}
+                      onChange={(e) => setEditBloodType(e.target.value)}
+                    />
+                  </div>
+
+                  {/* Gender */}
+                  <div className="space-y-1">
+                    <label className="font-bold text-gray-700 dark:text-gray-300">الجنس</label>
+                    <select
+                      className="w-full p-2 border rounded-xl bg-white dark:bg-slate-900"
+                      value={editGender}
+                      onChange={(e) => setEditGender(e.target.value as any)}
+                    >
+                      <option value="ذكر">ذكر</option>
+                      <option value="أنثى">أنثى</option>
+                    </select>
                   </div>
                 </div>
 
-                {/* Laser Barcode generator representation */}
-                <div className="bg-white dark:bg-black/40 p-3 rounded-xl border border-pink-50 dark:border-pink-900/10 inline-flex flex-col items-center gap-1 w-full scale-95">
-                  <div className="flex gap-[2px] h-10 items-stretch bg-gray-900 p-1 w-full">
-                    {/* Repeating barcode vertical lines in SVG style layout */}
-                    {[1, 4, 2, 4, 1, 3, 2, 1, 4, 2, 1, 3, 4, 1, 2, 3, 2, 4, 1, 2, 1, 4, 3, 1, 2, 4, 3, 2].map((w, index) => (
-                      <div key={index} className="bg-white" style={{ flexGrow: w }} />
-                    ))}
-                  </div>
-                  <span className="text-[9px] font-mono tracking-widest text-gray-500 font-bold">{selectedStudent.qrCode}</span>
-                </div>
-
-                <div className="grid grid-cols-2 text-right text-[11px] text-gray-500 dark:text-gray-400 gap-y-1">
-                  <p><span className="font-semibold">تاريخ الانتساب:</span> {selectedStudent.joiningDate}</p>
-                  <p><span className="font-semibold">فصيلة الدم:</span> {selectedStudent.bloodType}</p>
-                  <p className="col-span-2 text-center text-[10px] text-gray-400 mt-2 font-semibold">بصمة الهوية مدمجة بنظام QR ومتابعة النقل</p>
-                </div>
-              </div>
-
-              {/* Academic Grades Record */}
-              <div className="space-y-4">
-                <div className="bg-gray-50 dark:bg-black/30 p-4 rounded-2xl relative">
-                  <h4 className="font-bold text-xs text-[#E91E63] uppercase border-b border-gray-200 dark:border-gray-800 pb-2 mb-3">
-                    كشف تقييم الدرجات الأكاديمية
-                  </h4>
-                  <div className="space-y-2.5">
-                    {Object.entries(selectedStudent.grades).map(([subject, val]) => (
-                      <div key={subject} className="flex justify-between items-center text-xs">
-                        <span className="font-semibold text-gray-700 dark:text-gray-300">{subject}</span>
-                        <div className="flex items-center gap-2">
-                          <div className="w-24 bg-gray-200 dark:bg-gray-800 h-1.5 rounded-full overflow-hidden">
-                            <div className="bg-[#E91E63] h-full" style={{ width: `${val}%` }} />
-                          </div>
-                          <span className="font-bold text-gray-800 dark:text-white font-mono">{val}%</span>
-                        </div>
+                {/* Grade editing block */}
+                <div className="bg-gray-50 dark:bg-slate-900/40 p-4 rounded-2xl space-y-3 border border-pink-100/20">
+                  <h4 className="font-black text-[#E91E63]">تعديل كشوفات درجات المواد الدراسية (%)</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {Object.keys(editGrades).map((subject) => (
+                      <div key={subject} className="space-y-1">
+                        <label className="font-bold text-gray-600 block">{subject}</label>
+                        <input
+                          type="number"
+                          min="0"
+                          max="100"
+                          className="w-full p-1.5 border rounded-lg bg-transparent font-mono text-center font-bold"
+                          value={editGrades[subject]}
+                          onChange={(e) => setEditGrades({
+                            ...editGrades,
+                            [subject]: Number(e.target.value)
+                          })}
+                        />
                       </div>
                     ))}
                   </div>
                 </div>
 
-                {/* Behavioral management panel */}
-                <div className="bg-gray-50 dark:bg-black/30 p-4 rounded-2xl space-y-3">
-                  <div className="flex justify-between items-center">
-                    <h4 className="font-bold text-xs text-[#E91E63] uppercase">تقييم الانضباط والسلوك</h4>
-                    <span className="text-xs font-black text-indigo-600 font-mono">{selectedStudent.behaviorScore}/100</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="60"
-                    max="100"
-                    value={selectedStudent.behaviorScore}
-                    onChange={(e) => onUpdateScore(selectedStudent.id, Number(e.target.value))}
-                    className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#E91E63]"
-                    id={`input-grade-slider-${selectedStudent.id}`}
-                  />
-                  <p className="text-[10px] text-gray-400 leading-relaxed">
-                    من خلال تحريك شريط السلوك يتم تعديل تقييم الطالب فورا في لوحة ولي الأمر، ويتم تحديث مؤشر الحوافز الأسبوعي.
-                  </p>
+                <div className="pt-3 border-t flex gap-2">
+                  <button
+                    type="button"
+                    onClick={saveStudentEdits}
+                    className="flex-1 py-2.5 bg-gradient-to-r from-[#E91E63] to-pink-500 text-white text-xs font-black rounded-xl hover:-translate-y-0.5 transition cursor-pointer"
+                  >
+                    💾 حفظ وتثبيت التعديلات بالملف
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsEditing(false)}
+                    className="px-5 py-2.5 bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 font-bold rounded-xl"
+                  >
+                    إلغاء التعديل
+                  </button>
                 </div>
               </div>
-            </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* ID electronic Student Badge card in premium layout */}
+                  <div className="border border-pink-100 dark:border-pink-900 bg-gradient-to-br from-white via-pink-50/20 to-pink-100/10 dark:from-school-card-dark dark:to-pink-950/10 p-5 rounded-2xl relative overflow-hidden soft-shadow text-center space-y-4">
+                    <div className="absolute right-0 top-0 w-24 h-24 bg-[#E91E63]/5 rounded-bl-[100px]" />
+                    <div className="flex justify-between items-center text-xs text-[#E91E63] font-bold mb-2">
+                      <span>مدرسة حبيبة التعليمية الدولية</span>
+                      <span className="text-[10px] bg-[#E91E63]/10 px-1 py-0.5 rounded">بطاقة طالب ذكية</span>
+                    </div>
 
-            <div className="flex justify-between items-center pt-3 border-t border-gray-100 dark:border-gray-800 gap-2">
-              <button
-                onClick={() => {
-                  window.print();
-                }}
-                className="px-4 py-2 border border-[#E91E63]/20 hover:border-[#E91E63] text-xs text-[#E91E63] font-bold rounded-xl cursor-pointer flex items-center gap-1 bg-[#E91E63]/5 hover:bg-pink-100"
-              >
-                <Download className="w-3.5 h-3.5" />
-                تصدير وطباعة بطاقة الهوية
-              </button>
-              <button
-                type="button"
-                onClick={() => setSelectedStudent(null)}
-                className="px-5 py-2 bg-gray-800 hover:bg-gray-900 text-white font-bold text-xs rounded-xl cursor-pointer"
-              >
-                إغلاق النافذة
-              </button>
-            </div>
+                    <div className="space-y-2">
+                      <img
+                        src={selectedStudent.avatar}
+                        alt={selectedStudent.name}
+                        className="w-20 h-20 rounded-full mx-auto object-cover border-4 border-[#E91E63] shadow"
+                      />
+                      <div>
+                        <h4 className="text-md font-bold text-gray-800 dark:text-white">{selectedStudent.name}</h4>
+                        <p className="text-xs text-gray-500">الفصل الدراسي: {selectedStudent.classId}</p>
+                      </div>
+                    </div>
+
+                    {/* Laser Barcode generator representation */}
+                    <div className="bg-white dark:bg-black/40 p-3 rounded-xl border border-pink-50 dark:border-pink-900/10 inline-flex flex-col items-center gap-1 w-full scale-95">
+                      <div className="flex gap-[2px] h-10 items-stretch bg-gray-900 p-1 w-full">
+                        {/* Repeating barcode vertical lines in SVG style layout */}
+                        {[1, 4, 2, 4, 1, 3, 2, 1, 4, 2, 1, 3, 4, 1, 2, 3, 2, 4, 1, 2, 1, 4, 3, 1, 2, 4, 3, 2].map((w, index) => (
+                          <div key={index} className="bg-white" style={{ flexGrow: w }} />
+                        ))}
+                      </div>
+                      <span className="text-[9px] font-mono tracking-widest text-gray-500 font-bold">{selectedStudent.qrCode}</span>
+                    </div>
+
+                    <div className="grid grid-cols-2 text-right text-[11px] text-gray-500 dark:text-gray-400 gap-y-1">
+                      <p><span className="font-semibold">جنس الطالب:</span> {selectedStudent.gender || "غير محدد"}</p>
+                      <p><span className="font-semibold">فصيلة الدم:</span> {selectedStudent.bloodType}</p>
+                      <p className="col-span-2"><span className="font-semibold">تاريخ الانتساب:</span> {selectedStudent.joiningDate}</p>
+                      <p className="col-span-2 text-center text-[10px] text-gray-400 mt-2 font-semibold">بصمة الهوية مدمجة بنظام QR ومتابعة النقل</p>
+                    </div>
+                  </div>
+
+                  {/* Academic Grades Record */}
+                  <div className="space-y-4">
+                    <div className="bg-gray-50 dark:bg-black/30 p-4 rounded-2xl relative">
+                      <h4 className="font-bold text-xs text-[#E91E63] uppercase border-b border-gray-200 dark:border-gray-800 pb-2 mb-3">
+                        كشف تقييم الدرجات الأكاديمية
+                      </h4>
+                      <div className="space-y-2.5">
+                        {Object.entries(selectedStudent.grades).map(([subject, val]) => (
+                          <div key={subject} className="flex justify-between items-center text-xs">
+                            <span className="font-semibold text-gray-700 dark:text-gray-300">{subject}</span>
+                            <div className="flex items-center gap-2">
+                              <div className="w-24 bg-gray-200 dark:bg-gray-800 h-1.5 rounded-full overflow-hidden">
+                                <div className="bg-[#E91E63] h-full" style={{ width: `${val}%` }} />
+                              </div>
+                              <span className="font-bold text-gray-800 dark:text-white font-mono">{val}%</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Behavioral management panel */}
+                    <div className="bg-gray-50 dark:bg-black/30 p-4 rounded-2xl space-y-3">
+                      <div className="flex justify-between items-center">
+                        <h4 className="font-bold text-xs text-[#E91E63] uppercase">تقييم الانضباط والسلوك</h4>
+                        <span className="text-xs font-black text-indigo-600 font-mono">{selectedStudent.behaviorScore}/100</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="60"
+                        max="100"
+                        value={selectedStudent.behaviorScore}
+                        onChange={(e) => onUpdateScore(selectedStudent.id, Number(e.target.value))}
+                        className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#E91E63]"
+                        id={`input-grade-slider-${selectedStudent.id}`}
+                      />
+                      <p className="text-[10px] text-gray-400 leading-relaxed">
+                        من خلال تحريك شريط السلوك يتم تعديل تقييم الطالب فورا في لوحة ولي الأمر، ويتم تحديث مؤشر الحوافز الأسبوعي.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap justify-between items-center pt-3 border-t border-gray-100 dark:border-gray-800 gap-2">
+                  <div className="flex gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => startEditingStudent(selectedStudent)}
+                      className="px-4 py-2 bg-pink-100 hover:bg-pink-200 text-[#E91E63] font-bold text-xs rounded-xl cursor-pointer"
+                    >
+                      ✍️ تعديل كامل بيانات الطالب
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onDeleteStudent(selectedStudent.id);
+                        setSelectedStudent(null);
+                      }}
+                      className="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-650 text-xs font-bold rounded-xl cursor-pointer"
+                    >
+                      🗑️ شطب القيد
+                    </button>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        window.print();
+                      }}
+                      className="px-4 py-2 border border-[#E91E63]/20 hover:border-[#E91E63] text-xs text-[#E91E63] font-bold rounded-xl cursor-pointer flex items-center gap-1 bg-[#E91E63]/5 hover:bg-pink-100"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      تصدير وطباعة بطاقة الهوية
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedStudent(null)}
+                      className="px-5 py-2 bg-gray-800 hover:bg-gray-900 text-white font-bold text-xs rounded-xl cursor-pointer"
+                    >
+                      إغلاق النافذة
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

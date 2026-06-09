@@ -142,7 +142,7 @@ export const AISecurityModule: React.FC<AISecurityModuleProps> = ({
     window.speechSynthesis.speak(utterance);
   };
 
-  const handleAiQuery = (promptText: string) => {
+  const handleAiQuery = async (promptText: string) => {
     const query = promptText || aiPrompt;
     if (!query) return;
 
@@ -154,25 +154,49 @@ export const AISecurityModule: React.FC<AISecurityModuleProps> = ({
 
     onAddAuditLog("استعلام سكرتير الذكاء الاصطناعي", query, "نجاح");
 
-    // Interactive custom answers depending on school stats info details
-    setTimeout(() => {
-      let response = '';
+    try {
+      const response = await fetch("/api/ai", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          prompt: query,
+          stats: schoolStats,
+          context: {
+            auditLogsCount: auditLogs?.length || 0,
+            studentsCount: allData?.students?.length || 0,
+            teachersCount: allData?.teachers?.length || 0,
+            transactionsCount: allData?.transactions?.length || 0,
+            booksCount: allData?.books?.length || 0,
+            routesCount: allData?.routes?.length || 0,
+            medicalRegsCount: allData?.medicalLogs?.length || 0,
+            warehouseCount: allData?.warehouse?.length || 0,
+            ocrDocsCount: allData?.ocrDocuments?.length || 0,
+            examsCount: allData?.exams?.length || 0
+          }
+        })
+      });
 
-      if (query.includes('المستودع') || query.includes('نقص') || query.includes('أصناف')) {
-        response = `من خلال فحص نظام المستودعات الحالي لـ مدرسة حبيبة، يتبين وجود عدد (${schoolStats.lowStockCount}) أصناف تحت حد الأمان المطلوب وهي: "سبورة زجاجية ذكية 120x240" (متوفر 12 بينما الحد الأدنى 3). تم اقتراح تذكرة شراء عاجلة ل جرير ومورد التجهيزات والأمصال.`;
-      } else if (query.includes('المالية') || query.includes('صافي') || query.includes('رصيد') || query.includes('ميزانية')) {
-        response = `الوضع المالي لمدرسة حبيبة التعليمية مستقر ومبهر جداً حالياً يا فندم. إجمالي الرسوم المحصلة والتدفقات الواردة بلغ (${schoolStats.totalBalance.toLocaleString()} شيكل جديد ₪)، وإجمالي مصروفات الرواتب والتوريد بلغ (31,350 شيكل)، مما يمنح صندوق الموازنة ميزة استباقية ممتازة للاستثمارات القادمة.`;
-      } else if (query.includes('ريان') || query.includes('الأحمد') || query.includes('تقرير')) {
-        response = `بناءً على ملف الطالب ريان حسن الأحمد، فهو طالب نشط بالفصل السادس (G6-A). معدل حضوره الإجمالي ممتاز ويبلغ (97.4%)، وتقييم السلوك والانضباط مرتفع جداً (98/100). درجاته في الرياضيات 94 والعلوم 88 وله مستحقات مالية متبقية بقيمة 1,300 شيكل فقط.`;
-      } else if (query.includes('سارة') || query.includes('الشريف')) {
-        response = `الطالبة سارة محمد الشريف هي الأولى على الفصل الأول (G1-A) بمعدل استثنائي 98.8%. سجل الغياب صفر (حضور 99.1%)، ورسومها الدراسية مسددة بالكامل بقيمة 4,000 شيكل جديد شاملاً بطاقتها الذكية ونظام الحافلات.`;
-      } else {
-        response = `أهلاً بك يا فندم. لقد تلقيت استفسارك حول "${query}". يسعدني إعلامك بأن جميع الفحوصات اليومية ومعدل حضور الطلاب اليوم مستقر بنسبة 96%، وحافلات النقل المدرسي ملتزمة ومترابطة بمسار قرطبة والياسمين دون عوائق مرورية تذكر.`;
+      if (!response.ok) {
+        throw new Error("فشلت عملية المزامنة مع خادم الذكاء الاصطناعي.");
       }
 
-      setAiAnswers(prev => [...prev, { sender: 'ai' as const, text: response, time: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }) }]);
+      const data = await response.json();
+      const aiResponseText = data.text || "عذراً، لم تنجح في صياغة رد متوافق.";
+      setAiAnswers(prev => [...prev, { sender: 'ai' as const, text: aiResponseText, time: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }) }]);
+    } catch (error: any) {
+      console.error("AI consult fetch error:", error);
+      // Fallback response with beautiful message
+      const fallbackMsg = `[الاستشاري المحلي لمكتب مدرسة حبيبة]
+تعذر الاتصال بخادم الذكاء الاصطناعي الخارجي مؤقتاً، ولكن يسعدني إفادتك بالتحليل الذكي المحلي:
+- حالة موازنة الصندوق: مستقرة بقيمة (${schoolStats.totalBalance.toLocaleString()} ₪).
+- الأصناف الحرجة بالمستودع: ${schoolStats.lowStockCount} أصناف تحت خط الأمان.
+- حالة العمليات: تم تأمين وحصانة ${auditLogs?.length || 0} حركة مسجلة بنجاح.`;
+      setAiAnswers(prev => [...prev, { sender: 'ai' as const, text: fallbackMsg, time: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }) }]);
+    } finally {
       setIsAiThinking(false);
-    }, 1200);
+    }
   };
 
   const handle2FA_Toggle = () => {

@@ -342,6 +342,11 @@ export default function App() {
     }
   };
 
+  const handleUpdateStudent = (updatedStudent: Student) => {
+    setStudents(prev => prev.map(s => s.id === updatedStudent.id ? updatedStudent : s));
+    addAuditLog("تحديث وتعديل بيانات ملف تعريف الطالب", updatedStudent.name, "نجاح");
+  };
+
   const handleUpdateStudentBehavior = (id: string, newScore: number) => {
     setStudents(prev => prev.map(s => s.id === id ? { ...s, behaviorScore: newScore } : s));
     const targetName = students.find(s => s.id === id)?.name || id;
@@ -358,6 +363,19 @@ export default function App() {
     addAuditLog("تأهيل وتعيين معلم تخصصي جديد", newTch.name, "نجاح");
   };
 
+  const handleDeleteTeacher = (id: string) => {
+    const targetName = teachers.find(t => t.id === id)?.name || id;
+    if (confirm(`هل أنت متأكد من رغبتك في شطب وإنهاء تعاقد المعلم: ${targetName}؟`)) {
+      setTeachers(prev => prev.filter(t => t.id !== id));
+      addAuditLog("إنهاء تعاقد وشطب معلم من الكادر", targetName, "نجاح");
+    }
+  };
+
+  const handleUpdateTeacher = (updatedTeacher: Teacher) => {
+    setTeachers(prev => prev.map(t => t.id === updatedTeacher.id ? updatedTeacher : t));
+    addAuditLog("تحديث بيانات ومستند معلم بالكادر الأكاديمي", updatedTeacher.name, "نجاح");
+  };
+
   const handleAddTeacherBonus = (id: string, bonusAmount: number) => {
     setTeachers(prev => prev.map(t => t.id === id ? { ...t, bonus: t.bonus + bonusAmount } : t));
     const targetName = teachers.find(t => t.id === id)?.name || id;
@@ -369,6 +387,16 @@ export default function App() {
     addAuditLog("بناء ونشر نموذج اختبار بنك أسئلة جديد", exam.title, "نجاح");
   };
 
+  const handleUpdateExam = (updatedExam: SchoolExam) => {
+    setExams(prev => prev.map(ex => ex.id === updatedExam.id ? updatedExam : ex));
+    addAuditLog("تعديل وتحديث بيانات اختبار بنك الأسئلة", updatedExam.title, "نجاح");
+  };
+
+  const handleDeleteExam = (examId: string) => {
+    setExams(prev => prev.filter(ex => ex.id !== examId));
+    addAuditLog("حذف وإلغاء اختبار من بنك الأسئلة الأكاديمي", examId, "نجاح");
+  };
+
   const handleAddTransaction = (tr: Omit<FinanceTransaction, 'id' | 'referenceNo' | 'status'>) => {
     const newTr: FinanceTransaction = {
       ...tr,
@@ -378,6 +406,18 @@ export default function App() {
     };
     setTransactions(prev => [newTr, ...prev]);
     addAuditLog(`إصدار وثيقة قيد مالي (${newTr.type})`, `${newTr.category} - ${newTr.amount.toLocaleString()} ₪`, "نجاح");
+  };
+
+  const handleDeleteTransaction = (id: string) => {
+    if (confirm("هل أنت متأكد من رغبتك في حذف هذا القيد المالي نهائياً؟")) {
+      setTransactions(prev => prev.filter(t => t.id !== id));
+      addAuditLog("شطب وإلغاء سند مالي نهائياً", id, "نجاح");
+    }
+  };
+
+  const handleUpdateTransaction = (updatedTr: FinanceTransaction) => {
+    setTransactions(prev => prev.map(t => t.id === updatedTr.id ? updatedTr : t));
+    addAuditLog("تحديث بيانات سند وقيد مالي مخصص", updatedTr.id, "نجاح");
   };
 
   const handlePayStudentFees = (stuId: string, amount: number) => {
@@ -747,6 +787,7 @@ export default function App() {
               students={students}
               onAddStudent={handleAddStudent}
               onDeleteStudent={handleDeleteStudent}
+              onUpdateStudent={handleUpdateStudent}
               onUpdateScore={handleUpdateStudentBehavior}
               onImportStudents={handleImportStudents}
             />
@@ -756,6 +797,8 @@ export default function App() {
             <TeachersModule
               teachers={teachers}
               onAddTeacher={handleAddTeacher}
+              onDeleteTeacher={handleDeleteTeacher}
+              onUpdateTeacher={handleUpdateTeacher}
               onAddBonus={handleAddTeacherBonus}
               onImportTeachers={handleImportTeachers}
             />
@@ -765,6 +808,8 @@ export default function App() {
             <AcademicsModule
               exams={exams}
               onAddExam={handleAddExam}
+              onUpdateExam={handleUpdateExam}
+              onDeleteExam={handleDeleteExam}
               studentsList={students}
             />
           )}
@@ -773,6 +818,8 @@ export default function App() {
             <FinancialsModule
               transactions={transactions}
               onAddTransaction={handleAddTransaction}
+              onDeleteTransaction={handleDeleteTransaction}
+              onUpdateTransaction={handleUpdateTransaction}
               studentsList={students}
               onPayStudentFees={handlePayStudentFees}
               onImportTransactions={handleImportTransactions}
@@ -792,6 +839,11 @@ export default function App() {
               messages={messages}
               onAddOCRDocument={handleAddOCRDocument}
               onSendMessage={handleSendMessage}
+              setEmployees={setEmployees}
+              setBooks={setBooks}
+              setRoutes={setRoutes}
+              setMedicalLogs={setMedicalLogs}
+              setWarehouse={setWarehouse}
             />
           )}
 

@@ -24,6 +24,7 @@ export interface Student {
   birthDate: string;
   transportId?: string;
   notes: string;
+  gender?: 'ذكر' | 'أنثى';
 }
 
 export interface Teacher {

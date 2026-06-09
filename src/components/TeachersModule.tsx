@@ -33,6 +33,8 @@ interface TeachersModuleProps {
   teachers: Teacher[];
   onAddTeacher: (teacher: Omit<Teacher, 'id'>) => void;
   onAddBonus: (id: string, bonusAmount: number) => void;
+  onDeleteTeacher?: (id: string) => void;
+  onUpdateTeacher?: (teacher: Teacher) => void;
   onImportTeachers?: (teachers: Omit<Teacher, 'id'>[]) => void;
 }
 
@@ -40,11 +42,51 @@ export const TeachersModule: React.FC<TeachersModuleProps> = ({
   teachers,
   onAddTeacher,
   onAddBonus,
+  onDeleteTeacher,
+  onUpdateTeacher,
   onImportTeachers
 }) => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
   const [bonusInput, setBonusInput] = useState('');
+
+  // Edit Teacher Form State
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editSubject, setEditSubject] = useState('');
+  const [editContractType, setEditContractType] = useState<'دائم' | 'عقد مؤقت'>('دائم');
+  const [editSalary, setEditSalary] = useState(0);
+  const [editEmail, setEditEmail] = useState('');
+  const [editPhone, setEditPhone] = useState('');
+  const [editClasses, setEditClasses] = useState<string[]>([]);
+
+  const startEditingTeacher = (tch: Teacher) => {
+    setEditName(tch.name);
+    setEditSubject(tch.subject);
+    setEditContractType(tch.contractType);
+    setEditSalary(tch.salary);
+    setEditEmail(tch.email);
+    setEditPhone(tch.phone);
+    setEditClasses([...tch.classes]);
+    setIsEditing(true);
+  };
+
+  const saveTeacherEdits = () => {
+    if (!selectedTeacher || !editName) return;
+    const updated: Teacher = {
+      ...selectedTeacher,
+      name: editName,
+      subject: editSubject,
+      contractType: editContractType,
+      salary: editSalary,
+      email: editEmail,
+      phone: editPhone,
+      classes: editClasses
+    };
+    onUpdateTeacher?.(updated);
+    setSelectedTeacher(updated);
+    setIsEditing(false);
+  };
 
   // Excel integration states
   const [showExcelSection, setShowExcelSection] = useState(false);
@@ -345,7 +387,10 @@ export const TeachersModule: React.FC<TeachersModuleProps> = ({
         <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-school-card-dark rounded-3xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto space-y-6 soft-shadow relative text-right">
             <button
-              onClick={() => setSelectedTeacher(null)}
+              onClick={() => {
+                setSelectedTeacher(null);
+                setIsEditing(false);
+              }}
               className="absolute left-4 top-4 bg-gray-100 dark:bg-gray-800 p-1.5 rounded-full text-gray-400 hover:text-gray-600 cursor-pointer"
             >
               x
@@ -359,7 +404,9 @@ export const TeachersModule: React.FC<TeachersModuleProps> = ({
                   className="w-16 h-16 rounded-full object-cover border-2 border-primary"
                 />
                 <div>
-                  <h2 className="text-xl font-black text-gray-800 dark:text-white">{selectedTeacher.name}</h2>
+                  <h2 className="text-xl font-black text-gray-800 dark:text-white">
+                    {isEditing ? "تعديل تفاصيل ملف المعلم كاملة" : selectedTeacher.name}
+                  </h2>
                   <p className="text-xs text-gray-500 leading-relaxed font-semibold">
                     مدرس تخصص: <span className="text-pink-600">{selectedTeacher.subject}</span> | الكادر الأكاديمي {selectedTeacher.contractType}
                   </p>
@@ -373,147 +420,273 @@ export const TeachersModule: React.FC<TeachersModuleProps> = ({
               </div>
             </div>
 
-            {/* Layout Split: 1) Schedule, 2) Salary, 3) Evaluations */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              {/* Right Side: Weekly Timetable (8 columns) */}
-              <div className="lg:col-span-8 space-y-4">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-md font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
-                    <Clock className="w-5 h-5 text-pink-600" />
-                    جدول الحصص والتواجد الأسبوعي
-                  </h3>
-                  <span className="text-[10px] text-gray-400">الفترات: 1 (08:00) إلى 5 (12:30)</span>
-                </div>
-
-                <div className="overflow-x-auto">
-                  <table className="w-full text-xs text-right border border-gray-100 dark:border-gray-800">
-                    <thead className="bg-pink-50/50 dark:bg-pink-950/20 text-[#E91E63] font-bold">
-                      <tr>
-                        <th className="p-2.5 border border-pink-100/20 dark:border-gray-800">اليوم</th>
-                        <th className="p-2.5 border border-pink-100/20 dark:border-gray-800">الحصة 1</th>
-                        <th className="p-2.5 border border-pink-100/20 dark:border-gray-800">الحصة 2</th>
-                        <th className="p-2.5 border border-pink-100/20 dark:border-gray-800">الحصة 3</th>
-                        <th className="p-2.5 border border-pink-100/20 dark:border-gray-800">الحصة 4</th>
-                        <th className="p-2.5 border border-pink-100/20 dark:border-gray-800">الحصة 5</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-                      {["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس"].map((day) => {
-                        const periods = selectedTeacher.schedule[day] || [];
-                        return (
-                          <tr key={day} className="hover:bg-gray-50/40 dark:hover:bg-black/10">
-                            <td className="p-2.5 font-bold border border-gray-100 dark:border-gray-840 text-gray-600 dark:text-gray-300 bg-pink-50/10">
-                              {day}
-                            </td>
-                            {[1, 2, 3, 4, 5].map((pNum) => {
-                              const match = periods.find(p => p.period === pNum);
-                              return (
-                                <td key={pNum} className="p-2.5 border border-gray-100 dark:border-gray-800">
-                                  {match ? (
-                                    <div className="bg-pink-100/50 dark:bg-pink-950/30 border border-[#E91E63]/20 p-1.5 rounded-lg space-y-0.5 text-center">
-                                      <p className="font-extrabold text-[#E91E63]">{match.className}</p>
-                                      <p className="text-[10px] text-gray-500">{match.subject}</p>
-                                    </div>
-                                  ) : (
-                                    <span className="text-gray-300 block text-center">-</span>
-                                  )}
-                                </td>
-                              );
-                            })}
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* Supervisor review evaluations */}
-                <div className="space-y-3">
-                  <h4 className="text-sm font-bold text-gray-700 dark:text-gray-300">سجل التقييمات والأداء التربوي</h4>
-                  <div className="space-y-2">
-                    {selectedTeacher.evaluations.map((evalMsg, i) => (
-                      <div key={i} className="bg-gray-50 dark:bg-black/20 p-3 rounded-xl border-r-2 border-[#E91E63] text-xs">
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="font-bold text-gray-700 dark:text-gray-300">{evalMsg.reviewer}</span>
-                          <span className="text-gray-400 font-mono text-[10px]">{evalMsg.date}</span>
-                        </div>
-                        <p className="text-gray-500 italic">" {evalMsg.comment} "</p>
-                      </div>
-                    ))}
+            {isEditing ? (
+              <div className="space-y-4 text-xs text-right">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Name */}
+                  <div className="space-y-1">
+                    <label className="font-bold text-gray-700 dark:text-gray-300">الاسم الثلاثي للمعلم*</label>
+                    <input
+                      type="text"
+                      className="w-full p-2.5 border rounded-xl bg-transparent font-bold text-gray-850 dark:text-white"
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                    />
                   </div>
-                </div>
-              </div>
 
-              {/* Left Side: Finance & Actions (4 columns) */}
-              <div className="lg:col-span-4 space-y-4 bg-gray-50/50 dark:bg-black/10 p-4 rounded-2xl border border-gray-100 dark:border-gray-800 text-xs">
-                <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1.5 border-b pb-2">
-                  <DollarSign className="w-5 h-5 text-emerald-600" />
-                  المستحقات وصرف الحوافز
-                </h3>
+                  {/* Subject */}
+                  <div className="space-y-1">
+                    <label className="font-bold text-gray-700 dark:text-gray-300">مادة التخصص / القسم</label>
+                    <input
+                      type="text"
+                      className="w-full p-2.5 border rounded-xl bg-transparent font-bold"
+                      value={editSubject}
+                      onChange={(e) => setEditSubject(e.target.value)}
+                    />
+                  </div>
 
-                <div className="space-y-2.5">
-                  <div className="flex justify-between">
-                    <span className="font-bold text-gray-500">الراتب الأساسي:</span>
-                    <span className="font-extrabold text-gary-800 dark:text-white">{selectedTeacher.salary.toLocaleString()} ₪</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="font-bold text-gray-500">الحوافز الحالية:</span>
-                    <span className="font-extrabold text-green-600">+{selectedTeacher.bonus.toLocaleString()} ₪</span>
-                  </div>
-                  <div className="flex justify-between border-t pt-2 border-dashed">
-                    <span className="font-black text-gray-800 dark:text-white">إجمالي المستحق هذا الشهر:</span>
-                    <span className="font-black text-[#E91E63] text-sm">{(selectedTeacher.salary + selectedTeacher.bonus).toLocaleString()} ₪</span>
-                  </div>
-                </div>
-
-                {/* Add dynamic bonus helper form */}
-                <div className="space-y-2 pt-3 border-t">
-                  <label className="font-bold text-gray-700 dark:text-gray-300 block">إضافة مكافأة / حافز نقدي جديد</label>
-                  <div className="flex gap-1.5">
+                  {/* Salary */}
+                  <div className="space-y-1">
+                    <label className="font-bold text-gray-700 dark:text-gray-300">الراتب الأساسي الشهرى (₪)</label>
                     <input
                       type="number"
-                      placeholder="شيكل"
-                      value={bonusInput}
-                      onChange={(e) => setBonusInput(e.target.value)}
-                      className="w-full px-2.5 py-1.5 border border-gray-200 rounded-xl text-xs"
-                      id="input-teacher-bonus"
+                      className="w-full p-2.5 border rounded-xl bg-transparent font-mono font-bold"
+                      value={editSalary}
+                      onChange={(e) => setEditSalary(Number(e.target.value))}
                     />
-                    <button
-                      onClick={() => handleBonusSubmit(selectedTeacher.id)}
-                      className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-3 py-1.5 rounded-xl cursor-pointer"
-                    >
-                      صرف
-                    </button>
                   </div>
-                  <p className="text-[10px] text-gray-400">تُضاف هذه الحوافز مباشرة إلى كشف الرواتب والميزانية العامة.</p>
+
+                  {/* Contract Type */}
+                  <div className="space-y-1">
+                    <label className="font-bold text-gray-700 dark:text-gray-300">طبيعة التعاقد بالكادر</label>
+                    <select
+                      className="w-full p-2.5 border rounded-xl bg-white dark:bg-slate-900"
+                      value={editContractType}
+                      onChange={(e) => setEditContractType(e.target.value as any)}
+                    >
+                      <option value="دائم">كادر أكاديمي دائم</option>
+                      <option value="عقد مؤقت">عقد أكاديمي مؤقت</option>
+                    </select>
+                  </div>
+
+                  {/* Email */}
+                  <div className="space-y-1">
+                    <label className="font-bold text-gray-700 dark:text-gray-300">بريد التواصل الأكاديمي</label>
+                    <input
+                      type="email"
+                      className="w-full p-2.5 border rounded-xl bg-transparent text-left font-mono"
+                      value={editEmail}
+                      onChange={(e) => setEditEmail(e.target.value)}
+                    />
+                  </div>
+
+                  {/* Phone */}
+                  <div className="space-y-1">
+                    <label className="font-bold text-gray-700 dark:text-gray-300">جوال المعلم للمتابعات</label>
+                    <input
+                      type="text"
+                      className="w-full p-2.5 border rounded-xl bg-transparent text-left font-mono"
+                      value={editPhone}
+                      onChange={(e) => setEditPhone(e.target.value)}
+                    />
+                  </div>
+
+                  {/* Classes */}
+                  <div className="space-y-1 col-span-1 md:col-span-2">
+                    <label className="font-bold text-gray-700 dark:text-gray-300">الصفوف والمساقات المسندة (مفصولة بمسافات)</label>
+                    <input
+                      type="text"
+                      className="w-full p-2.5 border rounded-xl bg-transparent font-bold"
+                      value={editClasses.join(" ")}
+                      onChange={(e) => setEditClasses(e.target.value.split(" ").filter(Boolean))}
+                      placeholder="مثال: 7-A 8-B 9-A"
+                    />
+                  </div>
                 </div>
 
-                {/* Teacher specific quick communication links */}
-                <div className="space-y-2 pt-4">
-                  <h4 className="font-bold text-gray-700 dark:text-gray-200">اتصل بالمعلم</h4>
-                  <div className="flex flex-col gap-1.5 font-mono text-[11px] text-[#E91E63]">
-                    <a href={`mailto:${selectedTeacher.email}`} className="flex items-center gap-1.5 hover:underline">
-                      <Mail className="w-3.5 h-3.5" />
-                      {selectedTeacher.email}
-                    </a>
-                    <a href={`tel:${selectedTeacher.phone}`} className="flex items-center gap-1.5 hover:underline text-gray-600 dark:text-gray-300">
-                      <Phone className="w-3.5 h-3.5 text-pink-600" />
-                      {selectedTeacher.phone}
-                    </a>
-                  </div>
+                <div className="pt-3 border-t flex gap-2">
+                  <button
+                    type="button"
+                    onClick={saveTeacherEdits}
+                    className="flex-1 py-2.5 bg-gradient-to-r from-emerald-500 to-green-600 text-white text-xs font-black rounded-xl cursor-pointer"
+                  >
+                    💾 حفظ وتحديث ملف المعلم
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsEditing(false)}
+                    className="px-5 py-2.5 bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 font-bold rounded-xl"
+                  >
+                    إلغاء التعديل
+                  </button>
                 </div>
               </div>
-            </div>
+            ) : (
+              <>
+                {/* Layout Split: 1) Schedule, 2) Salary, 3) Evaluations */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                  {/* Right Side: Weekly Timetable (8 columns) */}
+                  <div className="lg:col-span-8 space-y-4">
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-md font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+                        <Clock className="w-5 h-5 text-pink-600" />
+                        جدول الحصص والتواجد الأسبوعي
+                      </h3>
+                      <span className="text-[10px] text-gray-400">الفترات: 1 (08:00) إلى 5 (12:30)</span>
+                    </div>
 
-            <div className="flex justify-end pt-3 border-t text-sm">
-              <button
-                type="button"
-                onClick={() => setSelectedTeacher(null)}
-                className="px-5 py-2 bg-gray-800 text-white font-bold rounded-xl cursor-pointer hover:bg-gray-900"
-              >
-                إغلاق
-              </button>
-            </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs text-right border border-gray-100 dark:border-gray-800">
+                        <thead className="bg-pink-50/50 dark:bg-pink-950/20 text-[#E91E63] font-bold">
+                          <tr>
+                            <th className="p-2.5 border border-pink-100/20 dark:border-gray-800">اليوم</th>
+                            <th className="p-2.5 border border-pink-100/20 dark:border-gray-800">الحصة 1</th>
+                            <th className="p-2.5 border border-pink-100/20 dark:border-gray-800">الحصة 2</th>
+                            <th className="p-2.5 border border-pink-100/20 dark:border-gray-800">الحصة 3</th>
+                            <th className="p-2.5 border border-pink-100/20 dark:border-gray-800">الحصة 4</th>
+                            <th className="p-2.5 border border-pink-100/20 dark:border-gray-800">الحصة 5</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                          {["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس"].map((day) => {
+                            const periods = selectedTeacher.schedule[day] || [];
+                            return (
+                              <tr key={day} className="hover:bg-gray-50/40 dark:hover:bg-black/10">
+                                <td className="p-2.5 font-bold border border-gray-100 dark:border-gray-840 text-gray-600 dark:text-gray-300 bg-pink-50/10">
+                                  {day}
+                                </td>
+                                {[1, 2, 3, 4, 5].map((pNum) => {
+                                  const match = periods.find(p => p.period === pNum);
+                                  return (
+                                    <td key={pNum} className="p-2.5 border border-gray-100 dark:border-gray-800">
+                                      {match ? (
+                                        <div className="bg-pink-100/50 dark:bg-pink-950/30 border border-[#E91E63]/20 p-1.5 rounded-lg space-y-0.5 text-center">
+                                          <p className="font-extrabold text-[#E91E63]">{match.className}</p>
+                                          <p className="text-[10px] text-gray-500">{match.subject}</p>
+                                        </div>
+                                      ) : (
+                                        <span className="text-gray-300 block text-center">-</span>
+                                      )}
+                                    </td>
+                                  );
+                                })}
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Supervisor review evaluations */}
+                    <div className="space-y-3">
+                      <h4 className="text-sm font-bold text-gray-700 dark:text-gray-300">سجل التقييمات والأداء التربوي</h4>
+                      <div className="space-y-2">
+                        {selectedTeacher.evaluations.map((evalMsg, i) => (
+                          <div key={i} className="bg-gray-50 dark:bg-black/20 p-3 rounded-xl border-r-2 border-[#E91E63] text-xs">
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="font-bold text-gray-700 dark:text-gray-300">{evalMsg.reviewer}</span>
+                              <span className="text-gray-400 font-mono text-[10px]">{evalMsg.date}</span>
+                            </div>
+                            <p className="text-gray-500 italic">" {evalMsg.comment} "</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Left Side: Finance & Actions (4 columns) */}
+                  <div className="lg:col-span-4 space-y-4 bg-gray-50/50 dark:bg-black/10 p-4 rounded-2xl border border-gray-100 dark:border-gray-800 text-xs">
+                    <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1.5 border-b pb-2">
+                      <DollarSign className="w-5 h-5 text-emerald-600" />
+                      المستحقات وصرف الحوافز
+                    </h3>
+
+                    <div className="space-y-2.5">
+                      <div className="flex justify-between">
+                        <span className="font-bold text-gray-500">الراتب الأساسي:</span>
+                        <span className="font-extrabold text-gary-850 dark:text-white">{selectedTeacher.salary.toLocaleString()} ₪</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="font-bold text-gray-500">الحوافز الحالية:</span>
+                        <span className="font-extrabold text-green-600">+{selectedTeacher.bonus.toLocaleString()} ₪</span>
+                      </div>
+                      <div className="flex justify-between border-t pt-2 border-dashed">
+                        <span className="font-black text-gray-800 dark:text-white">إجمالي المستحق هذا الشهر:</span>
+                        <span className="font-black text-[#E91E63] text-sm">{(selectedTeacher.salary + selectedTeacher.bonus).toLocaleString()} ₪</span>
+                      </div>
+                    </div>
+
+                    {/* Add dynamic bonus helper form */}
+                    <div className="space-y-2 pt-3 border-t">
+                      <label className="font-bold text-gray-700 dark:text-gray-300 block">إضافة مكافأة / حافز نقدي جديد</label>
+                      <div className="flex gap-1.5">
+                        <input
+                          type="number"
+                          placeholder="شيكل"
+                          value={bonusInput}
+                          onChange={(e) => setBonusInput(e.target.value)}
+                          className="w-full px-2.5 py-1.5 border border-gray-200 rounded-xl text-xs"
+                          id="input-teacher-bonus"
+                        />
+                        <button
+                          onClick={() => handleBonusSubmit(selectedTeacher.id)}
+                          className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-3 py-1.5 rounded-xl cursor-pointer"
+                        >
+                          صرف
+                        </button>
+                      </div>
+                      <p className="text-[10px] text-gray-400">تُضاف هذه الحوافز مباشرة إلى كشف الرواتب والميزانية العامة.</p>
+                    </div>
+
+                    {/* Teacher specific quick communication links */}
+                    <div className="space-y-2 pt-4">
+                      <h4 className="font-bold text-gray-700 dark:text-gray-200">اتصل بالمعلم</h4>
+                      <div className="flex flex-col gap-1.5 font-mono text-[11px] text-[#E91E63]">
+                        <a href={`mailto:${selectedTeacher.email}`} className="flex items-center gap-1.5 hover:underline">
+                          <Mail className="w-3.5 h-3.5" />
+                          {selectedTeacher.email}
+                        </a>
+                        <a href={`tel:${selectedTeacher.phone}`} className="flex items-center gap-1.5 hover:underline text-gray-600 dark:text-gray-300">
+                          <Phone className="w-3.5 h-3.5 text-pink-600" />
+                          {selectedTeacher.phone}
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-between items-center pt-3 border-t text-sm">
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => startEditingTeacher(selectedTeacher)}
+                      className="px-4 py-2 bg-pink-100 hover:bg-pink-200 text-[#E91E63] font-bold text-xs rounded-xl cursor-pointer animate-pulse"
+                    >
+                      ✍️ تعديل بيانات المعلم
+                    </button>
+                    {onDeleteTeacher && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onDeleteTeacher(selectedTeacher.id);
+                          setSelectedTeacher(null);
+                        }}
+                        className="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-650 font-bold text-xs rounded-xl cursor-pointer"
+                      >
+                        🗑️ إنهاء التعاقد / حذف
+                      </button>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedTeacher(null)}
+                    className="px-5 py-2 bg-gray-800 text-white font-bold rounded-xl cursor-pointer hover:bg-gray-900"
+                  >
+                    إغلاق
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

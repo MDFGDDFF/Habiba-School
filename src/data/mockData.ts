@@ -40,7 +40,8 @@ export const initialStudents: Student[] = [
     bloodType: "+O",
     birthDate: "2014-04-12",
     transportId: "BUS-01",
-    notes: "طالب متميز رياضي وحائز على جائزة حفظ القرآن الكريم."
+    notes: "طالب متميز رياضي وحائز على جائزة حفظ القرآن الكريم.",
+    gender: "ذكر"
   },
   {
     id: "STU-2026-002",
@@ -62,7 +63,8 @@ export const initialStudents: Student[] = [
     bloodType: "-A",
     birthDate: "2019-08-22",
     transportId: "BUS-02",
-    notes: "الأولى على مستوى الصف الأول بمعدل 98.8%."
+    notes: "الأولى على مستوى الصف الأول بمعدل 98.8%.",
+    gender: "أنثى"
   },
   {
     id: "STU-2026-003",
@@ -84,7 +86,8 @@ export const initialStudents: Student[] = [
     bloodType: "+B",
     birthDate: "2021-11-05",
     transportId: "BUS-01",
-    notes: "طفل ذكي ومحب للألعاب التعليمية والأنشطة التفاعلية."
+    notes: "طفل ذكي ومحب للألعاب التعليمية والأنشطة التفاعلية.",
+    gender: "ذكر"
   },
   {
     id: "STU-2026-004",
@@ -106,7 +109,8 @@ export const initialStudents: Student[] = [
     bloodType: "+AB",
     birthDate: "2017-01-19",
     transportId: "",
-    notes: "طالبة متفوقة ولديها موهبة متميزة في الإلقاء والشعر."
+    notes: "طالبة متفوقة ولديها موهبة متميزة في الإلقاء والشعر.",
+    gender: "أنثى"
   },
   {
     id: "STU-2026-005",
@@ -128,7 +132,8 @@ export const initialStudents: Student[] = [
     bloodType: "+O",
     birthDate: "2020-05-30",
     transportId: "",
-    notes: "طفلة مجتهدة ومحبة للتلوين والأنشطة الجماعية الصفية."
+    notes: "طفلة مجتهدة ومحبة للتلوين والأنشطة الجماعية الصفية.",
+    gender: "أنثى"
   },
   {
     id: "STU-2026-006",
@@ -150,7 +155,8 @@ export const initialStudents: Student[] = [
     bloodType: "-B",
     birthDate: "2018-02-15",
     transportId: "BUS-02",
-    notes: "لديه شغف كبير بالقراءة والحساب الذهني السريع."
+    notes: "لديه شغف كبير بالقراءة والحساب الذهني السريع.",
+    gender: "ذكر"
   },
   {
     id: "STU-2026-007",
@@ -172,7 +178,8 @@ export const initialStudents: Student[] = [
     bloodType: "+A",
     birthDate: "2015-06-25",
     transportId: "",
-    notes: "تتحلى بأخلاق عالية ومشاركة فعالة متميزة في الإذاعة المدرسية."
+    notes: "تتحلى بأخلاق عالية ومشاركة فعالة متميزة في الإذاعة المدرسية.",
+    gender: "أنثى"
   },
   {
     id: "STU-2026-008",
@@ -194,7 +201,8 @@ export const initialStudents: Student[] = [
     bloodType: "+O",
     birthDate: "2016-10-10",
     transportId: "BUS-01",
-    notes: "طالب نشيط ويحب مادة العلوم بشكل لافت وإجراء التجارب البسيطة."
+    notes: "طالب نشيط ويحب مادة العلوم بشكل لافت وإجراء التجارب البسيطة.",
+    gender: "ذكر"
   }
 ];
 
@@ -375,7 +383,10 @@ export const initialClasses: SchoolClass[] = [
   { id: "G3-A", name: "الصف الثالث (أ)", gradeLevel: "الصف الثالث", advisor: "أ. طارق محمود الياسين", studentCount: 24, roomNumber: "قاعة 201" },
   { id: "G4-A", name: "الصف الرابع (أ)", gradeLevel: "الصف الرابع", advisor: "أ. هدى ياسين القرشي", studentCount: 24, roomNumber: "قاعة 202" },
   { id: "G5-A", name: "الصف الخامس (أ)", gradeLevel: "الصف الخامس", advisor: "أ. منيرة عبد الرحمن العبدالله", studentCount: 21, roomNumber: "قاعة 301" },
-  { id: "G6-A", name: "الصف السادس (أ)", gradeLevel: "الصف السادس", advisor: "أ. هدى ياسين القرشي", studentCount: 25, roomNumber: "قاعة 302" }
+  { id: "G6-A", name: "الصف السادس (أ)", gradeLevel: "الصف السادس", advisor: "أ. هدى ياسين القرشي", studentCount: 25, roomNumber: "قاعة 302" },
+  { id: "G7-A", name: "الصف السابع (أ)", gradeLevel: "الصف السابع", advisor: "أ. طارق محمود الياسين", studentCount: 19, roomNumber: "قاعة 401" },
+  { id: "G8-A", name: "الصف الثامن (أ)", gradeLevel: "الصف الثامن", advisor: "أ. منيرة عبد الرحمن العبدالله", studentCount: 21, roomNumber: "قاعة 402" },
+  { id: "G9-A", name: "الصف التاسع (أ)", gradeLevel: "الصف التاسع", advisor: "أ. هدى ياسين القرشي", studentCount: 18, roomNumber: "قاعة 501" }
 ];
 
 export const initialTransactions: FinanceTransaction[] = [
