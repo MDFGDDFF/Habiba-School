@@ -1,0 +1,6 @@
+{
+  "name": "مدرسة حبيبة التعليمية",
+  "description": "نظام ERP متكامل ومتطور ومصمم باحترافية لإدارة مدرسة حبيبة التعليمية بما يشمل شؤون الطلاب، الطاقم التعليمي، الحسابات، الأكاديميات، والمستندات.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
