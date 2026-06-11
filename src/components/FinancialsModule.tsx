@@ -105,12 +105,12 @@ export const FinancialsModule: React.FC<FinancialsModuleProps> = ({
 
   // States for general transaction
   const [trType, setTrType] = useState<'إيراد' | 'مصروف'>('إيراد');
-  const [trCategory, setTrCategory] = useState('رسوم دراسية');
+  const [trCategory, setTrCategory] = useState('دعم موازنة الرواتب');
   const [trAmount, setTrAmount] = useState('');
   const [trMethod, setTrMethod] = useState<'نقدي' | 'مدى' | 'فيزا / ماستر كارد' | 'تحويل بنكي'>('مدى');
   const [trDesc, setTrDesc] = useState('');
 
-  // States for student fee payment checkout sandbox
+  // States for student fee payment checkout sandbox (kept for interface/prop stability but unused in rendering)
   const [payStuId, setPayStuId] = useState(studentsList[0]?.id || '');
   const [payAmount, setPayAmount] = useState('3750');
   const [cardNumber, setCardNumber] = useState('4111 2222 3333 4444');
@@ -188,7 +188,7 @@ export const FinancialsModule: React.FC<FinancialsModuleProps> = ({
             <DollarSign className="w-7 h-7 text-[#E91E63]" />
             الحسابات والموازنة العامة للمدرسة
           </h1>
-          <p className="text-xs text-gray-500 mt-1">توليد القيود وإيصالات الصرف والقبض، ومتابعة رسوم الطلاب مع البوابة الإلكترونية</p>
+          <p className="text-xs text-gray-500 mt-1">توليد القيود وإيصالات الصرف والقبض، ومتابعة الرواتب وميزانية الكادر التعليمي والإداري</p>
         </div>
         <div className="flex flex-wrap gap-2 text-xs">
           <button
@@ -204,13 +204,6 @@ export const FinancialsModule: React.FC<FinancialsModuleProps> = ({
             عمليات إكسل Excel
           </button>
 
-          <button
-            onClick={() => setShowPayFeesModal(true)}
-            className="glow-btn bg-[#E91E63] text-white select-none px-4 py-2.5 rounded-xl font-bold flex items-center gap-2 transition cursor-pointer"
-          >
-            <CreditCard className="w-4 h-4" />
-            بوابة سداد ورسوم الطلاب
-          </button>
           <button
             onClick={() => setShowAddTrModal(true)}
             className="bg-gray-800 hover:bg-gray-950 text-white select-none px-4 py-2.5 rounded-xl font-bold flex items-center gap-1.5 transition cursor-pointer"
@@ -298,30 +291,30 @@ export const FinancialsModule: React.FC<FinancialsModuleProps> = ({
       {/* Financial stats summary blocks */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         <div className="glass-panel p-5 rounded-2xl soft-shadow text-right border-r-4 border-emerald-500">
-          <p className="text-xs text-gray-400 font-semibold">إجمالي التدفقات الواردة (الإيرادات)</p>
+          <p className="text-xs text-gray-400 font-semibold">إجمالي المخصصات والدعم (الإيرادات)</p>
           <div className="flex justify-between items-center mt-2">
             <span className="text-2xl font-black text-emerald-600">{totalRevenues.toLocaleString()} ₪</span>
             <TrendingUp className="w-6 h-6 text-emerald-500" />
           </div>
-          <span className="text-[10px] text-gray-400 block mt-1">تشمل مبيعات الكتب وحافلات النقل والرسوم السنوية</span>
+          <span className="text-[10px] text-gray-400 block mt-1">تشمل دعم موازنة المدرسة بدعم خارجي وتبرعات مخصصة للرواتب</span>
         </div>
 
         <div className="glass-panel p-5 rounded-2xl soft-shadow text-right border-r-4 border-amber-500">
-          <p className="text-xs text-gray-400 font-semibold">إجمالي التدفقات الخارجة (المصروفات)</p>
+          <p className="text-xs text-gray-400 font-semibold">إجمالي مصروفات الرواتب والأجور</p>
           <div className="flex justify-between items-center mt-2">
             <span className="text-2xl font-black text-amber-600">{totalExpenses.toLocaleString()} ₪</span>
             <TrendingDown className="w-6 h-6 text-amber-500" />
           </div>
-          <span className="text-[10px] text-gray-400 block mt-1">تشمل رواتب المعلمين والموظفين ومستلزمات المستودع</span>
+          <span className="text-[10px] text-gray-400 block mt-1">تشمل رواتب المعلمين والمعلمات وموظفي الكادر الإداري المسددة</span>
         </div>
 
         <div className="bg-gradient-to-br from-[#E91E63]/5 to-[#FFF] dark:from-pink-950/10 dark:to-school-card-dark p-5 rounded-2xl border border-[#E91E63]/10 soft-shadow text-right">
-          <p className="text-xs text-gray-400 font-semibold">صافي الملاءة وصندوق الموازنة</p>
+          <p className="text-xs text-gray-400 font-semibold">صافي المتبقي من صندوق الرواتب والموازنة</p>
           <div className="flex justify-between items-center mt-2">
             <span className="text-2xl font-black text-[#E91E63]">{netSavings.toLocaleString()} ₪</span>
             <Coins className="w-6 h-6 text-[#E91E63]" />
           </div>
-          <span className="text-[10px] text-gray-400 block mt-1">احتياطي الخزينة الإستراتيجي الموثق بدفاتر المراجعة</span>
+          <span className="text-[10px] text-gray-400 block mt-1">الرصيد الاحتياطي المتوفر لبند الرواتب والعمليات الأساسية المباشرة</span>
         </div>
       </div>
 
@@ -392,12 +385,12 @@ export const FinancialsModule: React.FC<FinancialsModuleProps> = ({
                     onChange={(e) => {
                       setTrType(e.target.value as 'إيراد' | 'مصروف');
                       // set default category based on type
-                      setTrCategory(e.target.value === 'إيراد' ? 'رسوم دراسية' : 'رواتب مدرسين');
+                      setTrCategory(e.target.value === 'إيراد' ? 'دعم موازنة الرواتب' : 'رواتب مدرسين');
                     }}
                     className="w-full px-3 py-2 border rounded-xl"
                   >
-                    <option value="إيراد">قيد إيراد (داخل للخزينة)</option>
-                    <option value="مصروف">قيد مصروف (خارج من الخزينة)</option>
+                    <option value="إيراد">قيد تخصيص دعم مالي (إيراد الخزينة)</option>
+                    <option value="مصروف">قيد صرف راتب/أجور (خارج من الخزينة)</option>
                   </select>
                 </div>
 
@@ -409,11 +402,11 @@ export const FinancialsModule: React.FC<FinancialsModuleProps> = ({
                     className="w-full px-3 py-2 border rounded-xl"
                   >
                     {trType === 'إيراد' ? (
-                      ["رسوم دراسية", "رسوم نقل وحافلات", "مبيعات كتب ومستلزمات", "تبرعات وأنشطة"].map(o => (
+                      ["دعم موازنة الرواتب", "تبرعات خارجية ومساهمات", "منحة دعم دورية"].map(o => (
                         <option key={o} value={o}>{o}</option>
                       ))
                     ) : (
-                      ["رواتب مدرسين", "مشتريات مستودع", "عقود صيانة", "فواتير ماء وإنترنت طاقة", "إيجار منشأة"].map(o => (
+                      ["رواتب مدرسين", "رواتب إداريين وموظفين"].map(o => (
                         <option key={o} value={o}>{o}</option>
                       ))
                     )}
@@ -477,131 +470,7 @@ export const FinancialsModule: React.FC<FinancialsModuleProps> = ({
         </div>
       )}
 
-      {/* Model 2: Student checkout fees portal gateway sandbox */}
-      {showPayFeesModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-school-card-dark rounded-3xl p-6 max-w-lg w-full soft-shadow relative text-right space-y-4">
-            <h2 className="text-lg font-black text-[#E91E63] border-b pb-2">بوابة سداد الرسوم المدرسية الإلكترونية (آمنة)</h2>
-            <p className="text-[11px] text-gray-400">بوابة دفع مصرفية افتراضية للمحاكاة وتحديث كشوف محاسبة مدرسة حبيبة مباشرة.</p>
-
-            <form onSubmit={handleSandboxPayment} className="space-y-4 text-xs bg-transparent">
-              <div className="grid grid-cols-2 gap-2">
-                <div className="space-y-1">
-                  <label className="font-bold text-gray-600 block">حدد اسم الطالب</label>
-                  <select
-                    value={payStuId}
-                    onChange={(e) => setPayStuId(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-xl text-xs"
-                  >
-                    {studentsList.map(stu => (
-                      <option key={stu.id} value={stu.id}>
-                        {stu.name} (المستحق: {stu.feesTotal - stu.feesPaid} ₪)
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="space-y-1 bg-transparent">
-                  <label className="font-bold text-gray-600 block">المبلغ المراد سداده حالاً (شيكل)</label>
-                  <input
-                    type="number"
-                    value={payAmount}
-                    onChange={(e) => setPayAmount(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-xl text-xs bg-transparent"
-                  />
-                </div>
-              </div>
-
-              {/* simulated payment card visualization */}
-              <div className="bg-gradient-to-br from-[#E91E63] via-[#D81B60] to-pink-800 text-white p-5 rounded-2xl space-y-4 soft-shadow font-mono ltr text-left">
-                <div className="flex justify-between items-center text-xs">
-                  <span className="font-semibold italic font-sans">MADA / CREDIT CARD</span>
-                  <span className="font-bold tracking-widest text-pink-200">مدرسة حبيبة</span>
-                </div>
-                
-                <div className="space-y-1 text-center py-2 bg-black/10 rounded-xl border border-white/10">
-                  <span className="text-lg font-bold block select-none tracking-widest">{cardNumber}</span>
-                </div>
-
-                <div className="flex justify-between text-[11px] text-pink-100 uppercase">
-                  <div>
-                    <span className="opacity-60 block text-[9px]">Card Holder</span>
-                    <span className="font-semibold">{cardHolder}</span>
-                  </div>
-                  <div>
-                    <span className="opacity-60 block text-[9px]">Expiry</span>
-                    <span className="font-semibold">{cardExpiry}</span>
-                  </div>
-                  <div>
-                    <span className="opacity-60 block text-[9px]">CVV</span>
-                    <span className="font-semibold">{cardCVV}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* payment fields inputs */}
-              <div className="space-y-3 pt-2">
-                <div className="space-y-1 bg-transparent">
-                  <label className="font-bold text-gray-700 block text-right">رقم البطاقة الائتمانية</label>
-                  <input
-                    type="text"
-                    required
-                    value={cardNumber}
-                    onChange={(e) => setCardNumber(e.target.value)}
-                    className="w-full px-3 py-1.5 border rounded-xl text-left bg-transparent"
-                  />
-                </div>
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="col-span-2 space-y-1 bg-transparent">
-                    <label className="font-bold text-gray-700 block text-right">الاسم المكتوب على البطاقة</label>
-                    <input
-                      type="text"
-                      required
-                      value={cardHolder}
-                      onChange={(e) => setCardHolder(e.target.value)}
-                      className="w-full px-3 py-1.5 border rounded-xl text-left bg-transparent"
-                    />
-                  </div>
-                  <div className="space-y-1 bg-transparent">
-                    <label className="font-bold text-gray-700 block text-right">الرمز السري (CVV)</label>
-                    <input
-                      type="password"
-                      maxLength={3}
-                      required
-                      value={cardCVV}
-                      onChange={(e) => setCardCVV(e.target.value)}
-                      className="w-full px-3 py-1.5 border rounded-xl text-center bg-transparent"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {paySuccessMsg && (
-                <div className="bg-green-50 text-green-600 border border-green-200 p-3 rounded-xl text-center font-bold">
-                  ✓ تم مصادقة العملية المصرفية بنجاح! طُبّقت على حساب أقساط الطالب المالية.
-                </div>
-              )}
-
-              <div className="flex justify-end gap-2 pt-2 border-t text-sm">
-                <button
-                  type="button"
-                  onClick={() => setShowPayFeesModal(false)}
-                  className="px-4 py-2 border rounded-xl cursor-pointer"
-                  disabled={isProcessingPay}
-                >
-                  إلغاء
-                </button>
-                <button
-                  type="submit"
-                  disabled={isProcessingPay}
-                  className="px-5 py-2 bg-[#E91E63] text-white font-bold rounded-xl flex items-center gap-1.5 cursor-pointer hover:bg-pink-600 disabled:opacity-40"
-                >
-                  {isProcessingPay ? 'جاري التحقق والمصادقة المزدوجة...' : 'إجراء السداد المصرفي الآن'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* Model 2 deleted because the school is free */}
 
       {/* Model 3: Printable Voucher Slip viewer */}
       {selectedInvoice && (

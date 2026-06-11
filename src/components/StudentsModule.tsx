@@ -160,8 +160,8 @@ export const StudentsModule: React.FC<StudentsModuleProps> = ({
   const [newNationalId, setNewNationalId] = useState('');
   const [newBloodType, setNewBloodType] = useState('+O');
   const [newBirthDate, setNewBirthDate] = useState('2013-01-01');
-  const [newFeesTotal, setNewFeesTotal] = useState(15000);
-  const [newFeesPaid, setNewFeesPaid] = useState(5000);
+  const [newFeesTotal, setNewFeesTotal] = useState(0);
+  const [newFeesPaid, setNewFeesPaid] = useState(0);
   const [newNotes, setNewNotes] = useState('');
   const [newGender, setNewGender] = useState<'ذكر' | 'أنثى'>('ذكر');
 
@@ -415,9 +415,7 @@ export const StudentsModule: React.FC<StudentsModuleProps> = ({
               </div>
               <div>
                 <span className="text-gray-400 block mb-1">الرسوم</span>
-                <span className={`font-extrabold ${stu.feesPaid === stu.feesTotal ? 'text-green-600' : 'text-amber-500'}`}>
-                  {stu.feesPaid === stu.feesTotal ? 'مدفوعة' : 'مستحقة'}
-                </span>
+                <span className="font-extrabold text-green-600">مجاني بالكامل</span>
               </div>
             </div>
 
@@ -574,25 +572,8 @@ export const StudentsModule: React.FC<StudentsModuleProps> = ({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="space-y-1">
-                    <label className="font-bold text-gray-700 dark:text-gray-300 block">الرسوم الدراسية السنوية (شيكل)</label>
-                    <input
-                      type="number"
-                      value={newFeesTotal}
-                      onChange={(e) => setNewFeesTotal(Number(e.target.value))}
-                      className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-transparent"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="font-bold text-gray-700 dark:text-gray-300 block">الدفعة الأولى المقدمة (شيكل)</label>
-                    <input
-                      type="number"
-                      value={newFeesPaid}
-                      onChange={(e) => setNewFeesPaid(Number(e.target.value))}
-                      className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-transparent"
-                    />
-                  </div>
+                <div className="p-3.5 bg-green-50 dark:bg-green-950/20 text-green-600 rounded-xl text-xs font-bold leading-relaxed border border-green-100 dark:border-green-900/35">
+                  ✓ تنبيه: مدرسة حبيبة مدرسة نموذجية مجانية بالكامل. لا يترتب على تسجيل الطلاب أي رسوم دراسية أو ماليّة.
                 </div>
               </div>
 

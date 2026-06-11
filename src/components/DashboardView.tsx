@@ -18,12 +18,13 @@ import {
   ArrowUpRight,
   TrendingUp as SparkIcon
 } from 'lucide-react';
-import { Student, Teacher, FinanceTransaction } from '../types';
+import { Student, Teacher, Employee, FinanceTransaction } from '../types';
 import { educationalEvents } from '../data/mockData';
 
 interface DashboardViewProps {
   students: Student[];
   teachers: Teacher[];
+  employees?: Employee[];
   transactions: FinanceTransaction[];
   onNavigate: (tab: string) => void;
 }
@@ -31,14 +32,16 @@ interface DashboardViewProps {
 export const DashboardView: React.FC<DashboardViewProps> = ({
   students,
   teachers,
+  employees = [],
   transactions,
   onNavigate
 }) => {
   // Statistics calculators
   const activeStudents = students.filter(s => s.status === 'نشط');
-  const totalInvoiced = students.reduce((sum, s) => sum + s.feesTotal, 0);
-  const totalPaid = students.reduce((sum, s) => sum + s.feesPaid, 0);
-  const totalDebt = totalInvoiced - totalPaid;
+  
+  const totalTeachersSalary = teachers.reduce((sum, t) => sum + (t.salary || 0) + (t.bonus || 0), 0);
+  const totalAdministratorsSalary = employees.reduce((sum, e) => sum + (e.salary || 0), 0);
+  const totalSalariesBudget = totalTeachersSalary + totalAdministratorsSalary;
   
   const totalExpenses = transactions
     .filter(t => t.type === 'مصروف' && t.status === 'مكتمل')
@@ -117,18 +120,18 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         </div>
 
-        {/* KPI 3: Total Collections */}
+        {/* KPI 3: Total Salaries Budget */}
         <div className="glass-panel p-5 rounded-2xl soft-shadow flex items-center justify-between transition hover:-translate-y-1 hover:shadow-lg duration-300">
           <div className="space-y-2">
-            <p className="text-gray-400 dark:text-gray-400 text-sm font-medium">الرسوم المحصلة</p>
+            <p className="text-gray-400 dark:text-gray-400 text-sm font-medium">ميزانية الرواتب الشهرية</p>
             <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-extrabold text-[#E91E63]">{totalPaid.toLocaleString()} ₪</span>
-              <span className="text-xs text-[#E91E63] font-bold">من {totalInvoiced.toLocaleString()}</span>
+              <span className="text-2xl font-extrabold text-[#E91E63]">{totalSalariesBudget.toLocaleString()} ₪</span>
+              <span className="text-xs text-[#E91E63] font-bold">معلمين وإداريين</span>
             </div>
-            <p className="text-xs text-red-500 font-medium">الذمم المعلقة: {totalDebt.toLocaleString()} ₪</p>
+            <p className="text-xs text-green-500 font-medium">التعليمي: {totalTeachersSalary.toLocaleString()} ₪ | الإداري: {totalAdministratorsSalary.toLocaleString()} ₪</p>
           </div>
-          <div className="bg-emerald-500/10 p-3 rounded-2xl">
-            <TrendingUp className="w-7 h-7 text-emerald-500" />
+          <div className="bg-[#E91E63]/10 p-3 rounded-2xl">
+            <DollarSign className="w-7 h-7 text-[#E91E63]" />
           </div>
         </div>
 
@@ -154,10 +157,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         <div className="lg:col-span-2 glass-panel p-6 rounded-2xl soft-shadow space-y-4">
           <div className="flex justify-between items-center">
             <div>
-              <h2 className="text-lg font-bold">مقارنة التدفق المالي والأقساط</h2>
-              <p className="text-xs text-gray-500">تحليل المبيعات والرسوم المحصلة مقارنة بالمصروفات التشغيلية للمدرسة</p>
+              <h2 className="text-lg font-bold">مراقبة ميزانية رواتب الكادر الأكاديمي والإداري</h2>
+              <p className="text-xs text-gray-500">تحليل المصروفات الشهرية لرواتب المدرسين مقارنة ب رواتب الإداريين والموظفين</p>
             </div>
-            <span className="text-xs font-semibold px-2 px-3 py-1 bg-pink-100 text-[#E91E63] rounded-full inline-flex items-center gap-1">
+            <span className="text-xs font-semibold px-3 py-1 bg-pink-100 text-[#E91E63] rounded-full inline-flex items-center gap-1">
               <SparkIcon className="w-3.5 h-3.5" />
               تحديث فوري
             </span>
@@ -183,8 +186,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               {/* Bar 1: January */}
               <div className="flex flex-col items-center gap-1 z-10 w-12">
                 <div className="w-full flex gap-1 justify-center">
-                  <div className="w-4 bg-gradient-to-t from-[#E91E63] to-pink-400 rounded-t-md hover:opacity-90 transition duration-150 cursor-pointer" style={{ height: '55%' }} title="رسوم محصلة: 11K" />
-                  <div className="w-4 bg-amber-500/80 rounded-t-md cursor-pointer" style={{ height: '30%' }} title="مصروفات: 6K" />
+                  <div className="w-4 bg-gradient-to-t from-[#E91E63] to-pink-400 rounded-t-md hover:opacity-90 transition duration-150 cursor-pointer" style={{ height: '55%' }} title="رواتب معلمين: 11K" />
+                  <div className="w-4 bg-amber-500/80 rounded-t-md cursor-pointer" style={{ height: '30%' }} title="رواتب إداريين: 6K" />
                 </div>
                 <span className="text-xs text-gray-500 mt-1">يناير</span>
               </div>
@@ -192,8 +195,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               {/* Bar 2: February */}
               <div className="flex flex-col items-center gap-1 z-10 w-12">
                 <div className="w-full flex gap-1 justify-center">
-                  <div className="w-4 bg-gradient-to-t from-[#E91E63] to-pink-400 rounded-t-md hover:opacity-90 transition duration-150 cursor-pointer" style={{ height: '70%' }} title="رسوم محصلة: 14K" />
-                  <div className="w-4 bg-amber-500/80 rounded-t-md cursor-pointer" style={{ height: '35%' }} title="مصروفات: 7K" />
+                  <div className="w-4 bg-gradient-to-t from-[#E91E63] to-pink-400 rounded-t-md hover:opacity-90 transition duration-150 cursor-pointer" style={{ height: '70%' }} title="رواتب معلمين: 14K" />
+                  <div className="w-4 bg-amber-500/80 rounded-t-md cursor-pointer" style={{ height: '35%' }} title="رواتب إداريين: 7K" />
                 </div>
                 <span className="text-xs text-gray-500 mt-1">فبراير</span>
               </div>
@@ -201,8 +204,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               {/* Bar 3: March */}
               <div className="flex flex-col items-center gap-1 z-10 w-12">
                 <div className="w-full flex gap-1 justify-center">
-                  <div className="w-4 bg-gradient-to-t from-[#E91E63] to-pink-400 rounded-t-md hover:opacity-90 transition duration-150 cursor-pointer" style={{ height: '85%' }} title="رسوم محصلة: 17K" />
-                  <div className="w-4 bg-amber-500/80 rounded-t-md cursor-pointer" style={{ height: '40%' }} title="مصروفات: 8K" />
+                  <div className="w-4 bg-gradient-to-t from-[#E91E63] to-pink-400 rounded-t-md hover:opacity-90 transition duration-150 cursor-pointer" style={{ height: '85%' }} title="رواتب معلمين: 17K" />
+                  <div className="w-4 bg-amber-500/80 rounded-t-md cursor-pointer" style={{ height: '40%' }} title="رواتب إداريين: 8K" />
                 </div>
                 <span className="text-xs text-gray-500 mt-1">مارس</span>
               </div>
@@ -210,8 +213,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               {/* Bar 4: April */}
               <div className="flex flex-col items-center gap-1 z-10 w-12">
                 <div className="w-full flex gap-1 justify-center">
-                  <div className="w-4 bg-gradient-to-t from-[#E91E63] to-pink-400 rounded-t-md hover:opacity-90 transition duration-150 cursor-pointer" style={{ height: '60%' }} title="رسوم محصلة: 12K" />
-                  <div className="w-4 bg-amber-500/80 rounded-t-md cursor-pointer" style={{ height: '45%' }} title="مصروفات: 9K" />
+                  <div className="w-4 bg-gradient-to-t from-[#E91E63] to-pink-400 rounded-t-md hover:opacity-90 transition duration-150 cursor-pointer" style={{ height: '60%' }} title="رواتب معلمين: 12K" />
+                  <div className="w-4 bg-amber-500/80 rounded-t-md cursor-pointer" style={{ height: '45%' }} title="رواتب إداريين: 9K" />
                 </div>
                 <span className="text-xs text-gray-500 mt-1">أبريل</span>
               </div>
@@ -219,8 +222,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               {/* Bar 5: May */}
               <div className="flex flex-col items-center gap-1 z-10 w-12">
                 <div className="w-full flex gap-1 justify-center">
-                  <div className="w-4 bg-gradient-to-t from-[#E91E63] to-pink-400 rounded-t-md hover:opacity-90 transition duration-150 cursor-pointer" style={{ height: '95%' }} title="رسوم محصلة: 19K" />
-                  <div className="w-4 bg-amber-500/80 rounded-t-md cursor-pointer" style={{ height: '25%' }} title="مصروفات: 5K" />
+                  <div className="w-4 bg-gradient-to-t from-[#E91E63] to-pink-400 rounded-t-md hover:opacity-90 transition duration-150 cursor-pointer" style={{ height: '95%' }} title="رواتب معلمين: 19K" />
+                  <div className="w-4 bg-amber-500/80 rounded-t-md cursor-pointer" style={{ height: '25%' }} title="رواتب إداريين: 5K" />
                 </div>
                 <span className="text-xs text-gray-500 mt-1">مايو</span>
               </div>
@@ -228,8 +231,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               {/* Bar 6: June */}
               <div className="flex flex-col items-center gap-1 z-10 w-12">
                 <div className="w-full flex gap-1 justify-center">
-                  <div className="w-4 bg-gradient-to-t from-[#E91E63] to-pink-400 rounded-t-md hover:opacity-90 transition duration-150 cursor-pointer" style={{ height: '80%' }} title="رسوم محصلة: 16K" />
-                  <div className="w-4 bg-amber-500/80 rounded-t-md cursor-pointer" style={{ height: '20%' }} title="مصروفات: 4K" />
+                  <div className="w-4 bg-gradient-to-t from-[#E91E63] to-pink-400 rounded-t-md hover:opacity-90 transition duration-150 cursor-pointer" style={{ height: '80%' }} title="رواتب معلمين: 16K" />
+                  <div className="w-4 bg-amber-500/80 rounded-t-md cursor-pointer" style={{ height: '20%' }} title="رواتب إداريين: 4K" />
                 </div>
                 <span className="text-xs text-gray-500 mt-1">يونيو</span>
               </div>
@@ -240,11 +243,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <div className="flex justify-center gap-6 pt-2 text-xs">
             <div className="flex items-center gap-2">
               <span className="w-3.5 h-3.5 rounded-full bg-gradient-to-r from-[#E91E63] to-pink-400" />
-              <span className="text-gray-600 dark:text-gray-300">الإيرادات المحصلة (أقساط ورسوم)</span>
+              <span className="text-gray-600 dark:text-gray-300">رواتب الطاقم الأكاديمي والتعليمي</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-3.5 h-3.5 rounded-full bg-amber-500" />
-              <span className="text-gray-600 dark:text-gray-300">المصروفات التشغيلية والرواتب</span>
+              <span className="text-gray-600 dark:text-gray-300">رواتب الكادر الإداري والخدماتي</span>
             </div>
           </div>
         </div>

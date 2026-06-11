@@ -777,6 +777,7 @@ export default function App() {
             <DashboardView
               students={students}
               teachers={teachers}
+              employees={employees}
               transactions={transactions}
               onNavigate={(tab) => setActiveTab(tab)}
             />
